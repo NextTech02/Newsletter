@@ -9,10 +9,6 @@ st.set_page_config(page_title="Login", page_icon="🔐")
 if "authenticated" not in st.session_state:
     st.session_state["authenticated"] = False
 
-# Configurar variáveis de ambiente para o login_form
-os.environ["SUPABASE_URL"] = st.secrets["supabase"]["url"]
-os.environ["SUPABASE_KEY"] = st.secrets["supabase"]["key"]
-
 # Configurar o formulário de login - APENAS LOGIN (sem criar conta ou guest)
 try:
     client = login_form(
