@@ -17,7 +17,7 @@ if not st.session_state.get("authenticated", False):
     st.warning("Você precisa fazer login primeiro!")
     st.info("🔄 Redirecionando para a página de login...")
     time.sleep(1)
-    st.switch_page("login.py")
+    st.switch_page("Login.py")
     st.stop()
 
 # ============================================
