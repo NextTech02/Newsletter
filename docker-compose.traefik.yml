@@ -1,0 +1,74 @@
+version: '3.8'
+
+services:
+  # Backend FastAPI
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: newsletter-backend
+    restart: unless-stopped
+    environment:
+      - SUPABASE_URL=${SUPABASE_URL}
+      - SUPABASE_KEY=${SUPABASE_KEY}
+      - SMTP_SERVER=${SMTP_SERVER}
+      - SMTP_PORT=${SMTP_PORT}
+      - SMTP_USERNAME=${SMTP_USERNAME}
+      - SMTP_PASSWORD=${SMTP_PASSWORD}
+      - SECRET_KEY=${SECRET_KEY}
+      - FRONTEND_URL=https://app.nexteventsco.com
+    env_file:
+      - ./backend/.env
+    networks:
+      - traefik-public
+    labels:
+      # Habilitar Traefik
+      - "traefik.enable=true"
+
+      # Network
+      - "traefik.docker.network=traefik-public"
+
+      # HTTP Router
+      - "traefik.http.routers.newsletter-backend.rule=Host(`api.nexteventsco.com`)"
+      - "traefik.http.routers.newsletter-backend.entrypoints=websecure"
+      - "traefik.http.routers.newsletter-backend.tls=true"
+      - "traefik.http.routers.newsletter-backend.tls.certresolver=letsencrypt"
+
+      # Service
+      - "traefik.http.services.newsletter-backend.loadbalancer.server.port=8000"
+
+      # CORS Middleware
+      - "traefik.http.middlewares.newsletter-cors.headers.accesscontrolallowmethods=GET,POST,PUT,DELETE,OPTIONS"
+      - "traefik.http.middlewares.newsletter-cors.headers.accesscontrolalloworiginlist=https://app.nexteventsco.com"
+      - "traefik.http.middlewares.newsletter-cors.headers.accesscontrolallowcredentials=true"
+      - "traefik.http.middlewares.newsletter-cors.headers.accesscontrolallowheaders=Authorization,Content-Type"
+      - "traefik.http.routers.newsletter-backend.middlewares=newsletter-cors"
+
+  # Frontend React
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: newsletter-frontend
+    restart: unless-stopped
+    networks:
+      - traefik-public
+    labels:
+      # Habilitar Traefik
+      - "traefik.enable=true"
+
+      # Network
+      - "traefik.docker.network=traefik-public"
+
+      # HTTP Router
+      - "traefik.http.routers.newsletter-frontend.rule=Host(`app.nexteventsco.com`)"
+      - "traefik.http.routers.newsletter-frontend.entrypoints=websecure"
+      - "traefik.http.routers.newsletter-frontend.tls=true"
+      - "traefik.http.routers.newsletter-frontend.tls.certresolver=letsencrypt"
+
+      # Service
+      - "traefik.http.services.newsletter-frontend.loadbalancer.server.port=80"
+
+networks:
+  traefik-public:
+    external: true
