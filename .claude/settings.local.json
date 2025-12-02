@@ -9,7 +9,8 @@
       "Bash(./venv/Scripts/python.exe:*)",
       "Bash(timeout 5 ./venv/Scripts/python.exe -m app.main:*)",
       "Bash(curl:*)",
-      "Bash(./venv/Scripts/pip.exe:*)"
+      "Bash(./venv/Scripts/pip.exe:*)",
+      "Bash(git add:*)"
     ],
     "deny": [],
     "ask": []

@@ -3,7 +3,8 @@ Configurações do Backend
 """
 
 from pydantic_settings import BaseSettings
-from typing import Optional
+from pydantic import field_validator
+from typing import Optional, Union
 
 
 class Settings(BaseSettings):
@@ -15,11 +16,20 @@ class Settings(BaseSettings):
     API_PREFIX: str = "/api/v1"
 
     # CORS
-    CORS_ORIGINS: list = [
+    CORS_ORIGINS: Union[list, str] = [
       "http://localhost:3000",
       "http://localhost:5173",
       "https://app.nexteventsco.com"
     ]
+
+    @field_validator('CORS_ORIGINS', mode='before')
+    @classmethod
+    def parse_cors_origins(cls, v):
+        """Parse CORS_ORIGINS from string or list"""
+        if isinstance(v, str):
+            # If from env var, split by comma
+            return [origin.strip() for origin in v.split(",")]
+        return v
     # Frontend URL
     FRONTEND_URL: str = "http://localhost:3000"
 
