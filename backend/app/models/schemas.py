@@ -38,6 +38,13 @@ class LeadsList(BaseModel):
     leads: List[Lead]
 
 
+class UnsubscribeRequest(BaseModel):
+    """Schema para cancelar inscrição"""
+    email: EmailStr
+    reason: str = Field(..., min_length=1, description="Motivo do cancelamento")
+    comments: Optional[str] = Field(None, description="Comentários adicionais")
+
+
 # ============================================================================
 # NEWSLETTER
 # ============================================================================

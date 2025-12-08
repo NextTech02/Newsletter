@@ -20,11 +20,9 @@ import {
   CheckCircle as CheckCircleIcon,
   Error as ErrorIcon,
 } from '@mui/icons-material'
-import axios from 'axios'
 import { useLanguage } from '../contexts/LanguageContext'
 import { useTranslation } from '../translations/translations'
-
-const WEBHOOK_URL = 'https://nexttech-n8n-nexthub.haas2a.easypanel.host/webhook-test/fea06020-d1a5-4567-9608-ef486d975017'
+import { leadsAPI } from '../services/api'
 
 function Unsubscribe() {
   const [formData, setFormData] = useState({
@@ -67,11 +65,11 @@ function Unsubscribe() {
     setError(false)
 
     try {
-      await axios.post(WEBHOOK_URL, {
+      // Chama o endpoint do backend para cancelar inscrição
+      await leadsAPI.unsubscribe({
         email: formData.email,
         reason: formData.reason,
         comments: formData.comments,
-        timestamp: new Date().toISOString(),
       })
 
       setSuccess(true)

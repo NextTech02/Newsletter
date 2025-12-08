@@ -54,10 +54,8 @@ export const leadsAPI = {
   },
 
   // Cancelar inscrição
-  unsubscribe: async (email) => {
-    const response = await api.post('/leads/unsubscribe', null, {
-      params: { email }
-    })
+  unsubscribe: async (unsubscribeData) => {
+    const response = await api.post('/leads/unsubscribe', unsubscribeData)
     return response.data
   },
 }

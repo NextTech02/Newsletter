@@ -4,7 +4,7 @@ Rotas para gerenciamento de Leads
 
 from fastapi import APIRouter, HTTPException, status
 from app.models.schemas import (
-    Lead, LeadCreate, LeadsList, MessageResponse
+    Lead, LeadCreate, LeadsList, MessageResponse, UnsubscribeRequest
 )
 from app.services.supabase_service import supabase_service
 
@@ -81,15 +81,35 @@ async def delete_lead(lead_id: str):
 
 
 @router.post("/unsubscribe", response_model=MessageResponse)
-async def unsubscribe(email: str):
-    """Cancela inscrição de um lead pelo email"""
+async def unsubscribe(request: UnsubscribeRequest):
+    """
+    Cancela inscrição de um lead pelo email
+
+    Recebe:
+    - email: Email do lead a ser removido
+    - reason: Motivo do cancelamento
+    - comments: Comentários adicionais (opcional)
+    """
     try:
-        success = await supabase_service.unsubscribe_by_email(email)
-        if not success:
+        # Verificar se o email existe antes de deletar
+        existing_lead = await supabase_service.get_lead_by_email(request.email)
+        if not existing_lead:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail="Email não encontrado"
+                detail="Email não encontrado na lista de inscritos"
             )
+
+        # Deletar o lead
+        success = await supabase_service.unsubscribe_by_email(request.email)
+        if not success:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Erro ao processar cancelamento"
+            )
+
+        # Log do motivo e comentários (pode ser usado para análise futura)
+        print(f"[UNSUBSCRIBE] Email: {request.email}, Motivo: {request.reason}, Comentários: {request.comments or 'Nenhum'}")
+
         return {"message": "Inscrição cancelada com sucesso", "success": True}
     except HTTPException:
         raise
