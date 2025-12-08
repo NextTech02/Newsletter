@@ -73,10 +73,10 @@ class SupabaseService:
 
     async def create_lead(self, lead: LeadCreate) -> Dict:
         """Cria um novo lead"""
-        data = {"email": lead.email}
-
-        if lead.nome:
-            data["nome"] = lead.nome
+        data = {
+            "email": lead.email,
+            "nombre": lead.nome or ""  # Campo obrigatório no BD, envia vazio se não fornecido
+        }
 
         response = self.client.table(self.table_name).insert(data).execute()
 
