@@ -19,6 +19,12 @@ class SupabaseService:
         self.table_name = settings.LEADS_TABLE
         self.page_size = 1000
 
+    def _map_db_to_schema(self, data: Dict) -> Dict:
+        """Mapeia campos do DB (nombre) para o schema (nome)"""
+        if 'nombre' in data:
+            data['nome'] = data.pop('nombre')
+        return data
+
     async def get_all_leads(self) -> List[Dict]:
         """Busca todos os leads com paginação"""
         all_data = []
@@ -32,7 +38,9 @@ class SupabaseService:
             if not response.data:
                 break
 
-            all_data.extend(response.data)
+            # Mapeia campos do DB para o schema
+            mapped_data = [self._map_db_to_schema(item.copy()) for item in response.data]
+            all_data.extend(mapped_data)
 
             if len(response.data) < self.page_size:
                 break
@@ -59,7 +67,9 @@ class SupabaseService:
                 if not response.data:
                     break
 
-                all_data.extend(response.data)
+                # Mapeia campos do DB para o schema
+                mapped_data = [self._map_db_to_schema(item.copy()) for item in response.data]
+                all_data.extend(mapped_data)
 
                 if len(response.data) < self.page_size:
                     break
@@ -81,7 +91,8 @@ class SupabaseService:
         response = self.client.table(self.table_name).insert(data).execute()
 
         if response.data:
-            return response.data[0]
+            # Mapeia campos do DB para o schema
+            return self._map_db_to_schema(response.data[0].copy())
         else:
             raise Exception("Erro ao criar lead")
 
@@ -100,7 +111,7 @@ class SupabaseService:
         response = self.client.table(self.table_name).select("*").eq("email", email).execute()
 
         if response.data:
-            return response.data[0]
+            return self._map_db_to_schema(response.data[0].copy())
         return None
 
 
