@@ -1,32 +1,41 @@
-# Multi-stage build para Frontend React
-FROM node:20-alpine AS builder
+  # Multi-stage build para Frontend React
+  FROM node:20-alpine AS builder
 
-# Configurar diretório de trabalho
-WORKDIR /app
+  # Argumentos de build
+  ARG VITE_API_URL
 
-# Copiar package files
-COPY package*.json ./
+  # Configurar diretório de trabalho
+  WORKDIR /app
 
-# Instalar dependências
-RUN npm ci
+  # Copiar package files
+  COPY package*.json ./
 
-# Copiar código fonte
-COPY . .
+  # Instalar dependências
+  RUN npm ci
 
-# Build da aplicação
-RUN npm run build
+  # Copiar código fonte
+  COPY . .
 
-# Stage 2: Servir com Nginx
-FROM nginx:alpine
+  # Passar variável de ambiente para o build
+  ENV VITE_API_URL=$VITE_API_URL
 
-# Copiar build do stage anterior
-COPY --from=builder /app/dist /usr/share/nginx/html
+  # Build da aplicação
+  RUN npm run build
 
-# Copiar configuração customizada do Nginx
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+  # Debug: mostrar a URL que foi usada
+  RUN echo "Build completed with VITE_API_URL=$VITE_API_URL"
 
-# Expor porta
-EXPOSE 80
+  # Stage 2: Servir com Nginx
+  FROM nginx:alpine
 
-# Iniciar Nginx
-CMD ["nginx", "-g", "daemon off;"]
+  # Copiar build do stage anterior
+  COPY --from=builder /app/dist /usr/share/nginx/html
+
+  # Copiar configuração customizada do Nginx
+  COPY nginx.conf /etc/nginx/conf.d/default.conf
+
+  # Expor porta
+  EXPOSE 80
+
+  # Iniciar Nginx
+  CMD ["nginx", "-g", "daemon off;"]
