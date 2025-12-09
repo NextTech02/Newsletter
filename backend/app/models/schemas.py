@@ -14,7 +14,10 @@ from datetime import datetime
 class LeadBase(BaseModel):
     """Base para Lead"""
     email: EmailStr
-    nome: Optional[str] = None
+    nombre: Optional[str] = Field(None, alias="nome")
+
+    class Config:
+        populate_by_name = True  # Aceita tanto 'nombre' quanto 'nome'
 
 
 class LeadCreate(LeadBase):
@@ -28,8 +31,11 @@ class Lead(LeadBase):
     subscribed: Optional[bool] = True
     created_at: Optional[datetime] = None
 
-    class Config:
-        from_attributes = True
+    model_config = {
+        "from_attributes": True,
+        "populate_by_name": True,
+        "by_alias": True  # Serializa usando o alias 'nome' ao invés de 'nombre'
+    }
 
 
 class LeadsList(BaseModel):
